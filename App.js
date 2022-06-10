@@ -8,8 +8,9 @@ import {
   View,
   Alert,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 
-import { colors, CLEAR, ENTER } from "./src/constants";
+import { colors, colorsToEmoji, CLEAR, ENTER } from "./src/constants";
 import Keyboard from "./src/components/Keyboard/Keyboard";
 
 const word = "hello";
@@ -28,6 +29,7 @@ export default function App() {
   const [rows, setRows] = useState(initializeRows());
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
+  const [gameState, setGameState] = useState("playing");
 
   useEffect(() => {
     if (curRow > 0) {
@@ -36,15 +38,38 @@ export default function App() {
   }, [curRow]);
 
   const checkGameState = () => {
+    if (gameState !== "playing") return;
+
     const row = rows[curRow - 1];
-    console.log(row);
-    console.log(letters);
+
     if (row.every((letter, i) => letter === letters[i])) {
-      Alert.alert("You Won!!!");
+      setGameState("won");
+      // return Alert.alert("Won!");
+      return Alert.alert("Congrats", "You Won!!!", [
+        { text: "Share", onPress: shareScore },
+      ]);
+    }
+    if (curRow === rows.length) {
+      setGameState("lost");
+      return Alert.alert("Try again tomorrow");
     }
   };
 
+  const shareScore = async () => {
+    const emojiText = rows
+      .map((row, i) =>
+        row.map((cell, j) => colorsToEmoji[getCellBGColor(i, j)]).join("")
+      )
+      .filter((row) => row)
+      .join("\n");
+    const textToShare = `Wordle \n ${emojiText}`;
+    await Clipboard.setStringAsync(textToShare);
+    Alert.alert("Copied successfully", "Share your score!");
+  };
+
   const onKeyPressed = (key) => {
+    if (gameState !== "playing") return;
+
     const updatedRows = copyArray(rows);
 
     if (key === CLEAR) {
