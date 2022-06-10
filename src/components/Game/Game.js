@@ -67,8 +67,8 @@ const Game = () => {
         updatedRows[curRow][prevCol] = "";
         setRows(updatedRows);
         setCurCol(prevCol);
-        return;
       }
+      return;
     }
 
     if (key === ENTER) {
@@ -78,6 +78,7 @@ const Game = () => {
       }
       return;
     }
+    if (curCol >= rows[0].length) return;
     updatedRows[curRow][curCol] = key;
     setRows(updatedRows);
     if (curCol < rows[0].length) {
