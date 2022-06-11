@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Text, ScrollView, View, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 
 import { colors, colorsToEmoji, CLEAR, ENTER } from "../../constants";
@@ -19,17 +20,46 @@ const Game = () => {
   const [rows, setRows] = useState(initializeRows());
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
-  const [gameState, setGameState] = useState("playing");
+  const [gameState, setGameState] = useState();
 
   useEffect(() => {
-    if (curRow > 0) {
+    const getRows = async () => {
+      const cachedGame = await AsyncStorage.getItem("game");
+      if (cachedGame) {
+        const { rows, curRow, curCol, gameState } = JSON.parse(cachedGame);
+        setRows(rows);
+        setCurRow(curRow);
+        setCurCol(curCol);
+        setGameState(gameState);
+      } else {
+        setGameState("playing");
+      }
+    };
+    // AsyncStorage.setItem("game", "");
+    getRows();
+  }, []);
+
+  useEffect(() => {
+    if (curRow > 0 && !(gameState !== "playing")) {
       checkGameState();
     }
   }, [curRow]);
 
-  const checkGameState = () => {
-    if (gameState !== "playing") return;
+  useEffect(() => {
+    cacheGame();
+  }, [rows, curRow, curCol, gameState]);
 
+  const cacheGame = async () => {
+    const game = JSON.stringify({
+      rows: rows,
+      curRow: curRow,
+      curCol: curCol,
+      gameState: gameState,
+    });
+    AsyncStorage.setItem("game", game);
+  };
+
+  const checkGameState = () => {
     const row = rows[curRow - 1];
 
     if (row.every((letter, i) => letter === letters[i])) {
@@ -57,10 +87,13 @@ const Game = () => {
   };
 
   const onKeyPressed = (key) => {
+    //Only keep going if user is still in playing mode
     if (gameState !== "playing") return;
 
+    //Copy current rows to make changes to state.
     const updatedRows = copyArray(rows);
 
+    //Erase previous cell letter
     if (key === CLEAR) {
       if (curCol > 0) {
         const prevCol = curCol - 1;
@@ -68,23 +101,21 @@ const Game = () => {
         setRows(updatedRows);
         setCurCol(prevCol);
       }
-      return;
-    }
 
-    if (key === ENTER) {
+      //Go to the next row
+    } else if (key === ENTER) {
       if (curCol === rows[0].length) {
         setCurRow(curRow + 1);
         setCurCol(0);
       }
-      return;
-    }
-    if (curCol >= rows[0].length) return;
-    updatedRows[curRow][curCol] = key;
-    setRows(updatedRows);
-    if (curCol < rows[0].length) {
-      setCurCol(curCol + 1);
-    } else {
-      setCurCol(0);
+    } else if (curCol < rows[0].length) {
+      updatedRows[curRow][curCol] = key;
+      setRows(updatedRows);
+      if (curCol < rows[0].length) {
+        setCurCol(curCol + 1);
+      } else {
+        setCurCol(0);
+      }
     }
   };
 
