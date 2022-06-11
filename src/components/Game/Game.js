@@ -51,7 +51,7 @@ const Game = () => {
       )
       .filter((row) => row)
       .join("\n");
-    const textToShare = `Wordle \n ${emojiText}`;
+    const textToShare = `Wordle\n${emojiText}`;
     await Clipboard.setStringAsync(textToShare);
     Alert.alert("Copied successfully", "Share your score!");
   };
