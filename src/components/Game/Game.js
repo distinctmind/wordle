@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
-import { Text, ScrollView, View, Alert } from "react-native";
+import {
+  Text,
+  ScrollView,
+  View,
+  Alert,
+  ActivityIndicator,
+  Button,
+  Pressable,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 
 import { colors, colorsToEmoji, CLEAR, ENTER } from "../../constants";
-import { copyArray, getDayOfTheYear } from "../../utils/index";
+import { copyArray, getDayKey } from "../../utils/index";
+import EndScreen from "../EndScreen/EndScreen";
 import styles from "./Game.styles";
 import Keyboard from "../Keyboard/Keyboard";
 
 const word = "hello";
 const letters = word.split("");
 const NUMBER_OF_TRIES = 6;
+
+const dayKey = getDayKey();
 
 const initializeRows = () => {
   return new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill(""));
@@ -20,43 +31,78 @@ const Game = () => {
   const [rows, setRows] = useState(initializeRows());
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
-  const [gameState, setGameState] = useState();
+  const [gameState, setGameState] = useState("playing");
+  const [loaded, setLoaded] = useState(false);
 
+  //When we first mount the component, read the game state from cache
   useEffect(() => {
-    const getRows = async () => {
-      const cachedGame = await AsyncStorage.getItem("game");
-      if (cachedGame) {
-        const { rows, curRow, curCol, gameState } = JSON.parse(cachedGame);
-        setRows(rows);
-        setCurRow(curRow);
-        setCurCol(curCol);
-        setGameState(gameState);
-      } else {
-        setGameState("playing");
-      }
-    };
-    // AsyncStorage.setItem("game", "");
-    getRows();
+    //AsyncStorage.setItem("game", "");
+    readGameState();
   }, []);
 
+  //When user clicks enter, we check to see if they won or lost and update accordingly
   useEffect(() => {
-    if (curRow > 0 && !(gameState !== "playing")) {
+    if (curRow > 0 && gameState === "playing") {
       checkGameState();
     }
   }, [curRow]);
 
+  /* Whenever any state variable changes, we persist it to the cache
+  so if user exits apps, the data will still be available. */
   useEffect(() => {
-    cacheGame();
+    if (loaded) persistGameState();
   }, [rows, curRow, curCol, gameState]);
 
-  const cacheGame = async () => {
-    const game = JSON.stringify({
-      rows: rows,
-      curRow: curRow,
-      curCol: curCol,
-      gameState: gameState,
-    });
-    AsyncStorage.setItem("game", game);
+  const resetGame = async () => {
+    const dataForToday = {
+      rows: initializeRows(),
+      curRow: 0,
+      curCol: 0,
+      gameState: "playing",
+    };
+    setRows(dataForToday.rows);
+    setCurRow(dataForToday.curRow);
+    setCurCol(dataForToday.curCol);
+    setGameState(dataForToday.gameState);
+  };
+
+  const persistGameState = async () => {
+    const dataForToday = {
+      rows,
+      curRow,
+      curCol,
+      gameState,
+    };
+
+    try {
+      let existingStateString = await AsyncStorage.getItem("game");
+      const existingState = existingStateString
+        ? JSON.parse(existingStateString)
+        : {};
+      existingState[dayKey] = dataForToday;
+      const dataString = JSON.stringify(existingState);
+      await AsyncStorage.setItem("game", dataString);
+    } catch (e) {
+      console.log("Error persisting game state to Async Storage", e);
+    }
+  };
+
+  const readGameState = async () => {
+    try {
+      const gameStateString = await AsyncStorage.getItem("game");
+      console.log(gameStateString);
+      if (gameStateString) {
+        const game = JSON.parse(gameStateString);
+        const todaysGame = game[dayKey];
+        setRows(todaysGame.rows);
+        setCurRow(todaysGame.curRow);
+        setCurCol(todaysGame.curCol);
+        setGameState(todaysGame.gameState);
+      }
+    } catch (e) {
+      console.log("Error getting game state from Async Storage", e);
+    }
+    setLoaded(true);
   };
 
   const checkGameState = () => {
@@ -66,6 +112,7 @@ const Game = () => {
       setGameState("won");
       return Alert.alert("Congrats", "You Won!!!", [
         { text: "Share", onPress: shareScore },
+        { text: "Cancel" },
       ]);
     }
     if (curRow === rows.length) {
@@ -144,8 +191,14 @@ const Game = () => {
     );
   };
 
+  if (!loaded) return <ActivityIndicator />;
+
   return (
     <>
+      <Pressable onPress={() => resetGame()} style={styles.resetButton}>
+        <Text style={styles.resetText}>Reset</Text>
+      </Pressable>
+      {/* {gameState !== "playing" && <EndScreen gameState={gameState} />} */}
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
