@@ -3,24 +3,29 @@ import { StyleSheet } from "react-native";
 import { colors } from "../../constants";
 
 export default StyleSheet.create({
+  buttonView: {
+    flexDirection: "row",
+  },
   map: {
     alignSelf: "stretch",
     marginVertical: 18,
+    paddingHorizontal: 10,
   },
   row: {
     alignSelf: "stretch",
     flexDirection: "row",
     justifyContent: "center",
   },
-  resetButton: {
+  button: {
     marginTop: 11,
-    backgroundColor: colors.primary,
-    width: 75,
+    marginHorizontal: 7,
+    borderRadius: 50,
+    width: 70,
     height: 30,
     justifyContent: "center",
     alignItems: "center",
   },
-  resetText: {
+  buttonText: {
     color: colors.lightgrey,
     fontSize: 15,
     fontWeight: "800",

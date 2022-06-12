@@ -32,7 +32,9 @@ const Game = () => {
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
   const [gameState, setGameState] = useState("playing");
+
   const [loaded, setLoaded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   //When we first mount the component, read the game state from cache
   useEffect(() => {
@@ -52,6 +54,10 @@ const Game = () => {
   useEffect(() => {
     if (loaded) persistGameState();
   }, [rows, curRow, curCol, gameState]);
+
+  useEffect(() => {
+    if (gameState !== "playing") setModalVisible(true);
+  }, [gameState]);
 
   const resetGame = async () => {
     const dataForToday = {
@@ -195,10 +201,24 @@ const Game = () => {
 
   return (
     <>
-      <Pressable onPress={() => resetGame()} style={styles.resetButton}>
-        <Text style={styles.resetText}>Reset</Text>
-      </Pressable>
-      {/* {gameState !== "playing" && <EndScreen gameState={gameState} />} */}
+      <EndScreen
+        visible={modalVisible}
+        onClose={() => setModalVisible(!modalVisible)}
+      />
+      <View style={styles.buttonView}>
+        <Pressable
+          onPress={() => resetGame()}
+          style={[styles.button, { backgroundColor: colors.primary }]}
+        >
+          <Text style={styles.buttonText}>Reset</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setModalVisible(!modalVisible)}
+          style={[styles.button, { backgroundColor: colors.secondary }]}
+        >
+          <Text style={styles.buttonText}>Stats</Text>
+        </Pressable>
+      </View>
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
