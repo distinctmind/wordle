@@ -8,6 +8,11 @@ import {
   Button,
   Pressable,
 } from "react-native";
+import Animated, {
+  SlideInLeft,
+  FlipInEasyY,
+  ZoomIn,
+} from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 
@@ -191,6 +196,14 @@ const Game = () => {
     );
   };
 
+  const getCellStyle = (i, j) => [
+    styles.cell,
+    {
+      borderColor: isCellActive(i, j) ? colors.grey : colors.darkgrey,
+      backgroundColor: getCellBGColor(i, j),
+    },
+  ];
+
   if (!loaded) return <ActivityIndicator />;
 
   return (
@@ -217,24 +230,42 @@ const Game = () => {
       </View>
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
-          <View key={`row-${i}`} style={styles.row}>
+          <Animated.View
+            entering={SlideInLeft.delay(i * 33)}
+            key={`row-${i}`}
+            style={styles.row}
+          >
             {row.map((letter, j) => (
-              <View
-                key={`cell-${i}-${j}`}
-                style={[
-                  styles.cell,
-                  {
-                    borderColor: isCellActive(i, j)
-                      ? colors.grey
-                      : colors.darkgrey,
-                    backgroundColor: getCellBGColor(i, j),
-                  },
-                ]}
-              >
-                <Text style={styles.letter}>{letter}</Text>
-              </View>
+              <>
+                {i < curRow && (
+                  <Animated.View
+                    entering={FlipInEasyY.delay(j * 55)}
+                    key={`cell-color-${i}-${j}`}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.letter}>{letter}</Text>
+                  </Animated.View>
+                )}
+                {i === curRow && !!letter && (
+                  <Animated.View
+                    entering={ZoomIn}
+                    key={`cell-active-${i}-${j}`}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.letter}>{letter}</Text>
+                  </Animated.View>
+                )}
+                {!letter && (
+                  <Animated.View
+                    key={`cell-${i}-${j}`}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.letter}>{letter}</Text>
+                  </Animated.View>
+                )}
+              </>
             ))}
-          </View>
+          </Animated.View>
         ))}
       </ScrollView>
       <Keyboard
