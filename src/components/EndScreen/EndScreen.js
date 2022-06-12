@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, Modal, Pressable } from "react-native";
+import { Text, View, Modal, Pressable } from "react-native";
 import moment from "moment";
+
+import styles from "./EndScreen.styles";
 
 const stats = [
   {
@@ -21,7 +23,7 @@ const stats = [
   },
 ];
 
-function EndScreen({ visible, onClose }) {
+function EndScreen({ visible, onClose, onShare }) {
   const getTimeUntilNextGame = () => {
     let today = new moment();
     let tomorrow = new moment().startOf("day").add(1, "days");
@@ -69,82 +71,21 @@ function EndScreen({ visible, onClose }) {
               ))}
             </View>
           </View>
-          <View style={styles.timeView}>
-            <Text style={styles.title}>Next Worlde</Text>
-            <Text
-              style={styles.time}
-            >{`${time.hours}:${time.minutes}:${time.seconds}`}</Text>
+          <View style={styles.bottomView}>
+            <View style={styles.timeView}>
+              <Text style={styles.title}>Next Worlde</Text>
+              <Text
+                style={styles.time}
+              >{`${time.hours}:${time.minutes}:${time.seconds}`}</Text>
+            </View>
+            <Pressable onPress={onShare} style={styles.share}>
+              <Text style={styles.buttonText}>Share</Text>
+            </Pressable>
           </View>
         </View>
       </View>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  modal: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalView: {
-    backgroundColor: "black",
-    width: "77%",
-    height: "44%",
-    alignItems: "center",
-  },
-  close: {
-    position: "absolute",
-    right: 20,
-    top: 0,
-    marginVertical: 10,
-  },
-  closeText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "white",
-  },
-  title: {
-    textTransform: "uppercase",
-    fontWeight: "800",
-    color: "white",
-  },
-  time: {
-    color: "white",
-    fontSize: 22,
-    margin: 10,
-    fontWeight: "600",
-  },
-  timeView: {
-    position: "absolute",
-    bottom: 10,
-    left: 30,
-    marginVertical: 25,
-  },
-  statsView: {
-    marginTop: 30,
-    alignItems: "center",
-  },
-  stats: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  stat: {
-    width: 70,
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-  number: {
-    color: "white",
-    fontSize: 25,
-    fontWeight: "500",
-  },
-  subtitle: {
-    color: "white",
-    marginTop: 5,
-    textAlign: "center",
-  },
-});
 
 export default EndScreen;

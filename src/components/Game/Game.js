@@ -203,6 +203,7 @@ const Game = () => {
     <>
       <EndScreen
         visible={modalVisible}
+        onShare={() => shareScore()}
         onClose={() => setModalVisible(!modalVisible)}
       />
       <View style={styles.buttonView}>
