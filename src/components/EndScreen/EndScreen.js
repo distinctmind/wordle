@@ -30,11 +30,7 @@ function EndScreen({ visible, gameState, onClose, onShare }) {
     let tomorrow = new moment().startOf("day").add(1, "days");
     const diff = tomorrow.diff(today);
     const diffDuration = moment.duration(diff);
-    return {
-      hours: diffDuration.hours(),
-      minutes: diffDuration.minutes(),
-      seconds: diffDuration.seconds(),
-    };
+    return moment.utc(diffDuration.asMilliseconds()).format("HH:mm:ss");
   };
 
   const updateTime = () => {
@@ -82,9 +78,7 @@ function EndScreen({ visible, gameState, onClose, onShare }) {
           <View style={styles.bottomView}>
             <View style={styles.timeView}>
               <Text style={styles.title}>Next Worlde</Text>
-              <Text
-                style={styles.time}
-              >{`${time.hours}:${time.minutes}:${time.seconds}`}</Text>
+              <Text style={styles.time}>{time}</Text>
             </View>
             <Pressable onPress={onShare} style={styles.share}>
               <Text style={styles.buttonText}>Share</Text>
