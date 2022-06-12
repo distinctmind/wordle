@@ -82,4 +82,11 @@ export default StyleSheet.create({
     marginTop: 5,
     textAlign: "center",
   },
+  gameStatusText: {
+    color: colors.lightgrey,
+    fontSize: 25,
+    fontWeight: "700",
+    margin: 25,
+    textAlign: "center",
+  },
 });

@@ -23,7 +23,8 @@ const stats = [
   },
 ];
 
-function EndScreen({ visible, onClose, onShare }) {
+function EndScreen({ visible, gameState, onClose, onShare }) {
+  //   console.log(gameState);
   const getTimeUntilNextGame = () => {
     let today = new moment();
     let tomorrow = new moment().startOf("day").add(1, "days");
@@ -71,6 +72,13 @@ function EndScreen({ visible, onClose, onShare }) {
               ))}
             </View>
           </View>
+          {gameState !== "playing" && (
+            <Text style={styles.gameStatusText}>
+              {gameState === "won"
+                ? "Congrats, you won!"
+                : "You lost, try again tomorrow."}
+            </Text>
+          )}
           <View style={styles.bottomView}>
             <View style={styles.timeView}>
               <Text style={styles.title}>Next Worlde</Text>

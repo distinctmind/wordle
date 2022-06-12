@@ -96,7 +96,7 @@ const Game = () => {
   const readGameState = async () => {
     try {
       const gameStateString = await AsyncStorage.getItem("game");
-      console.log(gameStateString);
+      //   console.log(gameStateString);
       if (gameStateString) {
         const game = JSON.parse(gameStateString);
         const todaysGame = game[dayKey];
@@ -113,17 +113,11 @@ const Game = () => {
 
   const checkGameState = () => {
     const row = rows[curRow - 1];
-
     if (row.every((letter, i) => letter === letters[i])) {
       setGameState("won");
-      return Alert.alert("Congrats", "You Won!!!", [
-        { text: "Share", onPress: shareScore },
-        { text: "Cancel" },
-      ]);
     }
     if (curRow === rows.length) {
       setGameState("lost");
-      return Alert.alert("Try again tomorrow");
     }
   };
 
@@ -203,6 +197,7 @@ const Game = () => {
     <>
       <EndScreen
         visible={modalVisible}
+        gameState={gameState}
         onShare={() => shareScore()}
         onClose={() => setModalVisible(!modalVisible)}
       />
